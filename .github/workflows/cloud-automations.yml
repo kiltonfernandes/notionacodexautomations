@@ -1,0 +1,71 @@
+name: Cloud Notion Automations
+
+on:
+  workflow_dispatch:
+    inputs:
+      automation:
+        description: Automation to run
+        required: true
+        default: daily-cfm
+        type: choice
+        options:
+          - fhe
+          - mas
+          - daily-cfm
+          - sunday-school
+          - seminary
+      date:
+        description: Optional date override, YYYY-MM-DD
+        required: false
+        type: string
+  schedule:
+    # GitHub cron is UTC. America/Sao_Paulo is UTC-03.
+    - cron: "0 8 * * *"      # daily-cfm: 05:00 Sao_Paulo
+    - cron: "0 0 * * 2"      # seminary: Monday 21:00 Sao_Paulo
+    - cron: "0 2 * * 2"      # mas: Monday 23:00 Sao_Paulo
+    - cron: "0 17 * * 2"     # fhe: Tuesday 14:00 Sao_Paulo
+    - cron: "0 22 * * 4"     # sunday-school: Thursday 19:00 Sao_Paulo
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.2' }}
+      OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL || 'gpt-image-2' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Select scheduled automation
+        id: pick
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "automation=${{ inputs.automation }}" >> "$GITHUB_OUTPUT"
+            if [[ -n "${{ inputs.date }}" ]]; then
+              echo "date_arg=--date ${{ inputs.date }}" >> "$GITHUB_OUTPUT"
+            else
+              echo "date_arg=" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            case "${{ github.event.schedule }}" in
+              "0 8 * * *") echo "automation=daily-cfm" >> "$GITHUB_OUTPUT" ;;
+              "0 0 * * 2") echo "automation=seminary" >> "$GITHUB_OUTPUT" ;;
+              "0 2 * * 2") echo "automation=mas" >> "$GITHUB_OUTPUT" ;;
+              "0 17 * * 2") echo "automation=fhe" >> "$GITHUB_OUTPUT" ;;
+              "0 22 * * 4") echo "automation=sunday-school" >> "$GITHUB_OUTPUT" ;;
+              *) echo "Unknown schedule"; exit 1 ;;
+            esac
+            echo "date_arg=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run automation
+        run: python tools/lds_automation_runner.py --automation "${{ steps.pick.outputs.automation }}" ${{ steps.pick.outputs.date_arg }}
