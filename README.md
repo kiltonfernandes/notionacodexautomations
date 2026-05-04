@@ -2,7 +2,7 @@
 
 Cloud automations for LDS study, teaching preparation, family study, and Notion publishing.
 
-This project runs scheduled GitHub Actions that read weekly content from ChurchofJesusChrist.org, generate structured study/lesson pages, create infographics with OpenAI, and publish everything to Notion through the official Notion API.
+This project can run GitHub Actions that read weekly content from ChurchofJesusChrist.org, generate structured study/lesson pages, and publish everything to Notion through the official Notion API.
 
 The main goal is simple: keep the weekly and daily spiritual-study workflows organized, beautiful, and automatic, without depending on a local PC being turned on.
 
@@ -14,11 +14,11 @@ This repository powers five automation families:
 
 | Automation | Schedule Sao Paulo | Output | Image Upload |
 |---|---:|---|---|
-| `daily-cfm` | Daily 05:00 | Daily Come Follow Me study page | Yes |
-| `seminary` | Monday 21:00 | Two Seminary class pages, Wednesday and Friday | Yes |
+| `daily-cfm` | Daily 05:00 | Daily Come Follow Me study page | No |
+| `seminary` | Monday 21:00 | Two Seminary class pages, Wednesday and Friday | No |
 | `mas` | Monday 23:00 | Biweekly MAS lesson page | No |
 | `fhe` | Tuesday 14:00 | Family Home Evening page | No |
-| `sunday-school` | Thursday 19:00 | Biweekly Sunday School lesson page | Yes |
+| `sunday-school` | Thursday 19:00 | Biweekly Sunday School lesson page | No |
 
 All automations use Notion page hierarchies such as:
 
@@ -158,23 +158,15 @@ The current automation roots are:
 
 ## Schedule Map
 
-GitHub Actions cron runs in UTC. Sao Paulo is UTC-03.
+The cloud workflow is currently paused.
 
-| Automation | Sao Paulo Time | GitHub Cron |
-|---|---:|---|
-| `daily-cfm` | Daily 05:00 | `0 8 * * *` |
-| `seminary` | Monday 21:00 | `0 0 * * 2` |
-| `mas` | Monday 23:00 | `0 2 * * 2` |
-| `fhe` | Tuesday 14:00 | `0 17 * * 2` |
-| `sunday-school` | Thursday 19:00 | `0 22 * * 4` |
-
-Important: GitHub Actions may delay scheduled runs by a few minutes during busy periods.
+Manual dispatch is still available for testing, but no scheduled GitHub Actions run automatically until the cron is re-enabled.
 
 ---
 
 ## Manual Run
 
-Use manual dispatch for testing.
+Use manual dispatch for testing if you want to re-enable or validate the workflow later.
 
 1. Open [Actions](https://github.com/kiltonfernandes/notionacodexautomations/actions).
 2. Select `Cloud Notion Automations`.
@@ -193,6 +185,12 @@ Use manual dispatch for testing.
 
 The date override is useful for testing a specific lesson week.
 
+## Pause / Resume
+
+To pause the cloud layer, keep the workflow on `workflow_dispatch` only.
+
+To resume scheduled runs later, restore the cron triggers in `.github/workflows/cloud-automations.yml`.
+
 ---
 
 ## Prompt Library
@@ -205,7 +203,7 @@ These are the content-generation prompts used by each automation. The exact runt
 Use the Come, Follow Me lesson for the current week.
 Create one new daily study page.
 Before writing, inspect the pages already created in that week and choose a new angle so the day does not repeat previous days.
-Write in pt-BR with 500-1000 words, H1/H2/H3 hierarchy, short paragraphs, max 3 quote blocks, callouts, one infographic, timestamps if present, and a practical closing.
+Write in pt-BR with 500-1000 words, H1/H2/H3 hierarchy, short paragraphs, max 3 quote blocks, callouts, timestamps if present, and a practical closing.
 Focus on a new concept, perspective, application, or connection that still belongs to the LDS lesson.
 ```
 
@@ -216,7 +214,7 @@ Use the current Come, Follow Me lesson for teenagers 14-18.
 Create two pages for the week: one for Wednesday and one for Friday.
 Wednesday should establish context, base principles, and the first half of the lesson.
 Friday should deepen the doctrine, add application, and close the week.
-Each page must use H1/H2/H3/H4, short paragraphs, max 3 quote blocks, callouts, discussion questions, an activity, and a separate infographic.
+Each page must use H1/H2/H3/H4, short paragraphs, max 3 quote blocks, callouts, discussion questions, and an activity.
 ```
 
 ### `mas`
@@ -241,7 +239,6 @@ Keep the page simple, warm, and family-friendly with H1/H2/H3/H4, short paragrap
 ```text
 Use the current LDS lesson and build a biweekly Sunday School teaching page for young single adults ages 18-30.
 Split the lesson into two weekly teachings inside the biweekly page.
-Each weekly teaching needs its own infographic.
 Use H1/H2/H3/H4, short paragraphs, max 3 quote blocks, FAQ, open-ended questions, practical application, and strong visual organization.
 ```
 
@@ -310,24 +307,11 @@ All generated pages should follow these rules:
 
 ---
 
-## Image Upload Strategy
+## Image Strategy
 
-The Notion MCP connector did not expose local file upload.
+The current active chat automations are running without image generation.
 
-This project uses the official Notion File Upload API instead:
-
-1. Generate a local PNG infographic.
-2. Create a Notion file upload.
-3. Send the file bytes to Notion.
-4. Append an image block to the target page.
-
-The reusable script is:
-
-```powershell
-python tools\notion_image_upload.py --page-id PAGE_ID --image "C:\path\image.png" --caption "Infográfico"
-```
-
-In GitHub Actions, this happens in the cloud using `NOTION_TOKEN`.
+The repository still includes the official Notion File Upload tooling for future use, but the live prompts in the chat layer no longer require or attach infographics.
 
 ---
 
@@ -348,6 +332,7 @@ In GitHub Actions, this happens in the cloud using `NOTION_TOKEN`.
 - Created dedicated repository `notionacodexautomations`.
 - Migrated automation assets out of the unrelated `ProtoFlow` project.
 - Added GitHub Actions workflow for cloud execution.
+- Paused the cloud workflow so nothing runs on schedule.
 - Added schedule coverage for:
   - Daily Come Follow Me.
   - Seminary.
@@ -367,6 +352,8 @@ In GitHub Actions, this happens in the cloud using `NOTION_TOKEN`.
   - short paragraphs.
   - callout simulations.
   - bold and italic guidance.
+- Paused the GitHub Actions workflow so scheduled cloud runs do not execute.
+- Updated the active chat automations to run without image generation.
 - Added `.gitignore` to prevent committing Python cache, generated images, virtualenvs, and `.env`.
 - Removed generated Python cache files from the repository.
 - Added this README as project landing page, setup guide, operations guide, and changelog.
