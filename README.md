@@ -195,6 +195,58 @@ The date override is useful for testing a specific lesson week.
 
 ---
 
+## Prompt Library
+
+These are the content-generation prompts used by each automation. The exact runtime behavior lives in `tools/lds_automation_runner.py`, but this section documents the intended study shape in one place.
+
+### `daily-cfm`
+
+```text
+Use the Come, Follow Me lesson for the current week.
+Create one new daily study page.
+Before writing, inspect the pages already created in that week and choose a new angle so the day does not repeat previous days.
+Write in pt-BR with 500-1000 words, H1/H2/H3 hierarchy, short paragraphs, max 3 quote blocks, callouts, one infographic, timestamps if present, and a practical closing.
+Focus on a new concept, perspective, application, or connection that still belongs to the LDS lesson.
+```
+
+### `seminary`
+
+```text
+Use the current Come, Follow Me lesson for teenagers 14-18.
+Create two pages for the week: one for Wednesday and one for Friday.
+Wednesday should establish context, base principles, and the first half of the lesson.
+Friday should deepen the doctrine, add application, and close the week.
+Each page must use H1/H2/H3/H4, short paragraphs, max 3 quote blocks, callouts, discussion questions, an activity, and a separate infographic.
+```
+
+### `mas`
+
+```text
+Use the current weekly LDS lesson and create a biweekly page for young single adults ages 18-30.
+Organize the content into two weekly teachings inside the biweekly page.
+Use H1/H2/H3/H4, short paragraphs, max 3 quote blocks, FAQ sections, open-ended questions with answer options, practical application, and concise callouts.
+Keep the tone sober, direct, respectful, and anchored only in the LDS source material.
+```
+
+### `fhe`
+
+```text
+Use the next Come, Follow Me week and build a Family Home Evening page for Amanda, Kilton, Aurora, and Augusto.
+Choose two scriptures that best teach the doctrine of the lesson.
+Keep the page simple, warm, and family-friendly with H1/H2/H3/H4, short paragraphs, max 3 quote blocks, three open questions for Aurora, answer options, and a low-prep family activity.
+```
+
+### `sunday-school`
+
+```text
+Use the current LDS lesson and build a biweekly Sunday School teaching page for young single adults ages 18-30.
+Split the lesson into two weekly teachings inside the biweekly page.
+Each weekly teaching needs its own infographic.
+Use H1/H2/H3/H4, short paragraphs, max 3 quote blocks, FAQ, open-ended questions, practical application, and strong visual organization.
+```
+
+---
+
 ## Local Development
 
 From the repository root:
@@ -307,6 +359,7 @@ In GitHub Actions, this happens in the cloud using `NOTION_TOKEN`.
 - Added `tools/notion_api.py` for Notion page creation, hierarchy lookup, block append, archive, and image upload.
 - Added `tools/notion_image_upload.py` for standalone image upload to Notion.
 - Added `tools/notion_archive_pages.py` for archiving test pages.
+- Added a prompt library section documenting the content-generation prompt shape for each automation.
 - Added official Notion File Upload API path for image blocks.
 - Added max-3 quote block rule across generated pages.
 - Added consistent Notion formatting rules:
